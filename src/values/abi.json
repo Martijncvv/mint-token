@@ -1,12 +1,26 @@
 [
-    {
-      "name": "mint",
-      "type": "function",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        { "internalType": "address", "name": "to", "type": "address" },
-        { "internalType": "uint256", "name": "amount", "type": "uint256" }
-      ],
-      "outputs": []
-    }
-  ]
+	{
+		"name": "mint",
+		"type": "function",
+		"stateMutability": "nonpayable",
+		"inputs": [
+			{ "internalType": "address", "name": "to", "type": "address" },
+			{ "internalType": "uint256", "name": "amount", "type": "uint256" }
+		],
+		"outputs": []
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
