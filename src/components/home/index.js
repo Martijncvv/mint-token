@@ -1,8 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-
 import { useMintTokens } from '../../hooks'
 import Row from './row'
 import { contractAddress, network } from '../../values'
@@ -18,6 +16,8 @@ import {
 	AddOrUpdateAccountInfo,
 	fetchAccountInfo,
 } from '../../store/account/actions'
+
+import { ethers } from 'ethers'
 
 function Home() {
 	const dispatch = useDispatch()
@@ -45,10 +45,9 @@ function Home() {
 			const tokenAmount = balanceData ? balanceData.formatted : 0
 			const tokenSymbol = balanceData ? balanceData.symbol : ''
 			console.log('_______________')
-			// console.log('address ', address)
-			// console.log('balanceData ', balanceData.formatted)
+
 			dispatch(fetchAccountInfo(address))
-			dispatch(AddOrUpdateAccountInfo(address, tokenAmount))
+			dispatch(AddOrUpdateAccountInfo(address, tokenAmount * 10 ** 18))
 			dispatch(tokenInfo({ contractAddress, tokenName, tokenSymbol, network }))
 		}
 	}, [address, balanceData, txReceipt])
@@ -63,37 +62,25 @@ function Home() {
 					<div>
 						<Row
 							label="Token name:"
-							value={
-								tokenData && accountData.tokenAmount ? tokenData.name : 'empty '
-							}
+							value={tokenData ? tokenData.name : 'empty '}
 						/>
 						<Row
 							label="Token symbol:"
-							value={
-								tokenData && accountData.tokenAmount
-									? tokenData.symbol
-									: 'empty '
-							}
+							value={tokenData && accountData ? tokenData.symbol : 'empty '}
 						/>
 						<Row
 							label="Network:"
-							value={
-								tokenData && accountData.tokenAmount
-									? tokenData.network
-									: 'empty '
-							}
+							value={tokenData && accountData ? tokenData.network : 'empty '}
 						/>
 						<Row
 							label="User address:"
-							value={
-								tokenData && accountData.address ? accountData.address : 'empty'
-							}
+							value={tokenData && accountData ? accountData.address : 'empty'}
 						/>
 						<Row
 							label="User balance:"
 							value={
-								tokenData && accountData.tokenAmount
-									? accountData.tokenAmount
+								tokenData && accountData
+									? accountData.tokenAmount / 10 ** 18
 									: 'empty '
 							}
 						/>

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { startLoading, accountInfo } from './slice'
+import { ethers } from 'ethers'
 
 const API_URL = 'http://localhost:4000'
 
@@ -28,20 +29,19 @@ export const AddOrUpdateAccountInfo =
 			dispatch(startLoading())
 
 			const account = await dispatch(fetchAccountInfo(address, true))
+			console.log('account', account)
 			if (account.message === 'NO-USER') {
 				console.log('User not found, create new user')
 
 				dispatch(postAccountInfo(address, tokenAmount, mintToOther))
 			} else {
-				if (account.user.tokenAmount !== parseInt(tokenAmount)) {
+				if (Number(account.user.tokenAmount) !== Number(tokenAmount)) {
 					console.log('User found, update user')
-
+					console.log('(account.user.tokenAmount ', account.user.tokenAmount)
+					console.log('tokenAmount', tokenAmount)
 					dispatch(putAccountInfo(address, tokenAmount, mintToOther))
 				} else {
 					console.log('Accountdata update halt; No change in tokenAmount')
-					// console.log('HALT, address', address)
-					// console.log('HALT, tokenAmount', tokenAmount)
-					// dispatch(accountInfo(address, tokenAmount))
 				}
 			}
 		} catch (e) {
@@ -70,6 +70,7 @@ export const postAccountInfo =
 	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
 		try {
 			dispatch(startLoading())
+
 			const response = await axios.post(
 				`${API_URL}/user/${address}/${tokenAmount}`
 			)
