@@ -10,7 +10,10 @@ import { contractAddress, network } from '../../values'
 import { useDispatch, useSelector } from 'react-redux'
 import { tokenInfo } from '../../store/token/slice'
 import { selectTokenInfo } from '../../store/token/selectors'
-import { selectAccountInfo } from '../../store/account/selectors'
+import {
+	selectAccountInfo,
+	selectLoadingState,
+} from '../../store/account/selectors'
 import {
 	AddOrUpdateAccountInfo,
 	fetchAccountInfo,
@@ -21,6 +24,7 @@ function Home() {
 
 	const accountData = useSelector(selectAccountInfo)
 	const tokenData = useSelector(selectTokenInfo)
+	const loadingState = useSelector(selectLoadingState)
 
 	const {
 		mintAddress,
@@ -40,9 +44,9 @@ function Home() {
 		if (address && balanceData) {
 			const tokenAmount = balanceData ? balanceData.formatted : 0
 			const tokenSymbol = balanceData ? balanceData.symbol : ''
-			console.log('---------------')
-			console.log('address ', address)
-			console.log('balanceData ', balanceData.formatted)
+			console.log('_______________')
+			// console.log('address ', address)
+			// console.log('balanceData ', balanceData.formatted)
 			dispatch(fetchAccountInfo(address))
 			dispatch(AddOrUpdateAccountInfo(address, tokenAmount))
 			dispatch(tokenInfo({ contractAddress, tokenName, tokenSymbol, network }))

@@ -14,9 +14,7 @@ export const fetchAllAccounts = async (dispatch, getState) => {
 }
 
 export const AddOrUpdateAccountInfo =
-	(address, tokenAmount) => async (dispatch, getState) => {
-		// console.log('AUAIaddress ', address)
-		// console.log('AUAItokenAmount ', tokenAmount)
+	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
 		if (address.length !== 42) {
 			console.log(`Error, invalid data; address: ${address} `)
 			return
@@ -33,14 +31,17 @@ export const AddOrUpdateAccountInfo =
 			if (account.message === 'NO-USER') {
 				console.log('User not found, create new user')
 
-				dispatch(postAccountInfo(address, tokenAmount))
+				dispatch(postAccountInfo(address, tokenAmount, mintToOther))
 			} else {
 				if (account.user.tokenAmount !== parseInt(tokenAmount)) {
 					console.log('User found, update user')
 
-					dispatch(putAccountInfo(address, tokenAmount))
+					dispatch(putAccountInfo(address, tokenAmount, mintToOther))
 				} else {
 					console.log('Accountdata update halt; No change in tokenAmount')
+					// console.log('HALT, address', address)
+					// console.log('HALT, tokenAmount', tokenAmount)
+					// dispatch(accountInfo(address, tokenAmount))
 				}
 			}
 		} catch (e) {
@@ -66,28 +67,28 @@ export const fetchAccountInfo =
 	}
 
 export const postAccountInfo =
-	(address, tokenAmount) => async (dispatch, getState) => {
+	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
 		try {
 			dispatch(startLoading())
 			const response = await axios.post(
 				`${API_URL}/user/${address}/${tokenAmount}`
 			)
 			console.log('POSTAccountInfo response: ', response.data)
-			// dispatch(accountInfo(response.data.user))
+			!mintToOther && dispatch(accountInfo(response.data.user))
 		} catch (e) {
 			console.log(e.message)
 		}
 	}
 
 export const putAccountInfo =
-	(address, tokenAmount) => async (dispatch, getState) => {
+	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
 		try {
 			dispatch(startLoading())
 			const response = await axios.put(
 				`${API_URL}/user/${address}/${tokenAmount}`
 			)
 			console.log('PUTAccountInfo response: ', response.data)
-			// dispatch(accountInfo(response.data.user))
+			!mintToOther && dispatch(accountInfo(response.data.user))
 		} catch (e) {
 			console.log(e.message)
 		}

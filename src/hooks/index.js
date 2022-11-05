@@ -42,7 +42,7 @@ export const useMintTokens = () => {
 		},
 	})
 	const [mintAddress, setMintAddress] = useState('')
-	const [minted, setMinted] = useState(false)
+	// const [minted, setMinted] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const [txReceipt, setTxReceipt] = useState()
 	const debouncedMintAddress = useDebounce(mintAddress)
@@ -81,14 +81,13 @@ export const useMintTokens = () => {
 
 		onSuccess(data) {
 			openSnackbar(`Tokens minted to address: ${mintAddress}`)
-			setMintAddress('')
 			setIsLoading(false)
-			setMinted(true)
+			// setMinted(true)
 			setTxReceipt(data)
 		},
 		onError(error) {
 			setIsLoading(false)
-			setMinted(false)
+			// setMinted(false)
 		},
 	})
 
@@ -99,16 +98,26 @@ export const useMintTokens = () => {
 	})
 
 	const dispatch = useDispatch()
-	console.log('txReceipt ', txReceipt)
 	useEffect(() => {
+		console.log('txReceipt ', txReceipt)
 		const tokenAmount = mintBalanceData
 			? parseInt(mintBalanceData.formatted)
 			: 0
+
+		console.log('mintAddress ', mintAddress)
+		console.log('tokenAmount ', tokenAmount)
 		if (mintAddress.length === 42 && tokenAmount >= 0) {
 			console.log('MINT UPDATE')
 
-			dispatch(AddOrUpdateAccountInfo(mintAddress, tokenAmount))
+			dispatch(
+				AddOrUpdateAccountInfo(
+					mintAddress,
+					tokenAmount,
+					address !== mintAddress
+				)
+			)
 		}
+		setMintAddress('')
 	}, [txReceipt])
 
 	useSnackbar({
@@ -132,6 +141,6 @@ export const useMintTokens = () => {
 		setIsLoading,
 		tokenName,
 		address,
-		minted,
+		// minted,
 	}
 }
