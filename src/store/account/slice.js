@@ -17,7 +17,6 @@ export const accountSlice = createSlice({
 			state.address = action.payload.address
 			state.tokenAmount = action.payload.tokenAmount
 			state.loading = false
-			// console.log('ACCOUNT-INFO UPDATED')
 		},
 	},
 })

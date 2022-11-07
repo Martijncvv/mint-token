@@ -11,9 +11,9 @@ import {
 import { ethers } from 'ethers'
 
 import { useDispatch } from 'react-redux'
-import { AddOrUpdateAccountInfo } from '../store/account/actions'
+import { StoreAccountInfo } from '../store/account/actions'
 
-import { contractAddress } from '../values'
+import { CONTRACTADDRESS } from '../values'
 import abi from '../values/abi.json'
 
 const useDebounce = (value, delay) => {
@@ -42,7 +42,6 @@ export const useMintTokens = () => {
 		},
 	})
 	const [mintAddress, setMintAddress] = useState('')
-	// const [minted, setMinted] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const [txReceipt, setTxReceipt] = useState()
 	const debouncedMintAddress = useDebounce(mintAddress)
@@ -51,18 +50,18 @@ export const useMintTokens = () => {
 
 	const { data: balanceData } = useBalance({
 		addressOrName: address,
-		token: contractAddress,
+		token: CONTRACTADDRESS,
 		watch: true,
 	})
 
 	const { data: tokenName } = useContractRead({
-		address: contractAddress,
+		address: CONTRACTADDRESS,
 		abi,
 		functionName: 'name',
 	})
 
 	const { config } = usePrepareContractWrite({
-		address: contractAddress,
+		address: CONTRACTADDRESS,
 		abi,
 		functionName: 'mint',
 		args: [debouncedMintAddress, ethers.utils.parseEther('10')],
@@ -76,45 +75,35 @@ export const useMintTokens = () => {
 		},
 	})
 
-	const { data: TransactionReceipt } = useWaitForTransaction({
+	useWaitForTransaction({
 		hash: mintData?.hash,
 
 		onSuccess(data) {
 			openSnackbar(`Tokens minted to address: ${mintAddress}`)
 			setIsLoading(false)
-			// setMinted(true)
+
 			setTxReceipt(data)
 		},
 		onError(error) {
 			setIsLoading(false)
-			// setMinted(false)
 		},
 	})
 
 	const { data: mintBalanceData } = useBalance({
 		addressOrName: mintAddress,
-		token: contractAddress,
+		token: CONTRACTADDRESS,
 		watch: true,
 	})
 
 	const dispatch = useDispatch()
 	useEffect(() => {
-		console.log('txReceipt ', txReceipt)
 		const tokenAmount = mintBalanceData
 			? parseInt(mintBalanceData.formatted)
 			: 0
 
-		console.log('mintAddress ', mintAddress)
-		console.log('tokenAmount ', tokenAmount)
 		if (mintAddress.length === 42 && tokenAmount >= 0) {
-			console.log('MINT UPDATE')
-
 			dispatch(
-				AddOrUpdateAccountInfo(
-					mintAddress,
-					tokenAmount,
-					address !== mintAddress
-				)
+				StoreAccountInfo(mintAddress, tokenAmount, address !== mintAddress)
 			)
 		}
 		setMintAddress('')
@@ -141,6 +130,5 @@ export const useMintTokens = () => {
 		setIsLoading,
 		tokenName,
 		address,
-		// minted,
 	}
 }

@@ -1,30 +1,23 @@
 import React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+
 import { useMintTokens } from '../../hooks'
 import Row from './row'
-import { contractAddress, network } from '../../values'
 
-import { useDispatch, useSelector } from 'react-redux'
 import { tokenInfo } from '../../store/token/slice'
 import { selectTokenInfo } from '../../store/token/selectors'
-import {
-	selectAccountInfo,
-	selectLoadingState,
-} from '../../store/account/selectors'
-import {
-	AddOrUpdateAccountInfo,
-	fetchAccountInfo,
-} from '../../store/account/actions'
+import { selectAccountInfo } from '../../store/account/selectors'
+import { StoreAccountInfo, fetchAccountInfo } from '../../store/account/actions'
 
-import { ethers } from 'ethers'
+import { CONTRACTADDRESS, NETWORK } from '../../values'
 
 function Home() {
 	const dispatch = useDispatch()
 
 	const accountData = useSelector(selectAccountInfo)
 	const tokenData = useSelector(selectTokenInfo)
-	const loadingState = useSelector(selectLoadingState)
 
 	const {
 		mintAddress,
@@ -39,16 +32,20 @@ function Home() {
 	} = useMintTokens()
 
 	useEffect(() => {
-		console.log('useEffect Home')
-
 		if (address && balanceData) {
 			const tokenAmount = balanceData ? balanceData.formatted : 0
 			const tokenSymbol = balanceData ? balanceData.symbol : ''
-			console.log('_______________')
-
+			console.log(NETWORK)
 			dispatch(fetchAccountInfo(address))
-			dispatch(AddOrUpdateAccountInfo(address, tokenAmount * 10 ** 18))
-			dispatch(tokenInfo({ contractAddress, tokenName, tokenSymbol, network }))
+			dispatch(StoreAccountInfo(address, tokenAmount * 10 ** 18))
+			dispatch(
+				tokenInfo({
+					contractAddress: CONTRACTADDRESS,
+					tokenName,
+					tokenSymbol,
+					network: NETWORK,
+				})
+			)
 		}
 	}, [address, balanceData, txReceipt])
 
@@ -60,28 +57,25 @@ function Home() {
 				</nav>
 				<div className="flex flex-wrap ml-14">
 					<div>
-						<Row
-							label="Token name:"
-							value={tokenData ? tokenData.name : 'empty '}
-						/>
+						<Row label="Token name:" value={tokenData ? tokenData.name : ' '} />
 						<Row
 							label="Token symbol:"
-							value={tokenData && accountData ? tokenData.symbol : 'empty '}
+							value={tokenData && accountData ? tokenData.symbol : ' '}
 						/>
 						<Row
 							label="Network:"
-							value={tokenData && accountData ? tokenData.network : 'empty '}
+							value={tokenData && accountData ? tokenData.network : ' '}
 						/>
 						<Row
 							label="User address:"
-							value={tokenData && accountData ? accountData.address : 'empty'}
+							value={tokenData && accountData ? accountData.address : ''}
 						/>
 						<Row
 							label="User balance:"
 							value={
 								tokenData && accountData
 									? accountData.tokenAmount / 10 ** 18
-									: 'empty '
+									: ' '
 							}
 						/>
 					</div>
@@ -107,17 +101,6 @@ function Home() {
 						>
 							Mint tokens
 						</button>
-						{/* <div>
-							<button
-								onClick={() => {
-									testFunction()
-								}}
-								className="disabled:opacity-25 enabled:hover:scale-105 transform transition bg-blue-500 hover:bg-primary text-white font-bold py-2 px-4 rounded"
-								type="button"
-							>
-								TEST
-							</button>
-						</div> */}
 					</div>
 				</div>
 			</div>

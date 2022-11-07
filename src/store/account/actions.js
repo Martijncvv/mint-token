@@ -1,26 +1,33 @@
 import axios from 'axios'
 import { startLoading, accountInfo } from './slice'
-import { ethers } from 'ethers'
+import { SERVER_API_BASE_URL } from '../../values'
 
-const API_URL = 'http://localhost:4000'
-
+/// @notice Fetches all user data
+/// @return Data of all users
 export const fetchAllAccounts = async (dispatch, getState) => {
 	try {
 		dispatch(startLoading())
-		const response = await axios.get(`${API_URL}/users`)
-		console.log('response: ', response)
+		const response = await axios.get(`${SERVER_API_BASE_URL}/users`)
+		return response.data
 	} catch (e) {
 		console.log(e.message)
 	}
 }
 
-export const AddOrUpdateAccountInfo =
-	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
+/// @notice Store account info
+/// @notice Verifies input
+/// @notice Verifies if user already exists in DB and if any data changed
+/// @notice Calls POST or PUT request if needed
+/// @param address, string: Address of user
+/// @param tokenAmount, string: Token amount of user in wei format
+/// @param noStoreUpdate?, boolean: TRUE to avoid accountStore update
+export const StoreAccountInfo =
+	(address, tokenAmount, noStoreUpdate) => async (dispatch, getState) => {
 		if (address.length !== 42) {
 			console.log(`Error, invalid data; address: ${address} `)
 			return
 		}
-		if (!(parseInt(tokenAmount) >= 0)) {
+		if (!(Number(tokenAmount) >= 0)) {
 			console.log(`Error, invalid data; tokenAmount: ${tokenAmount} `)
 			return
 		}
@@ -29,17 +36,15 @@ export const AddOrUpdateAccountInfo =
 			dispatch(startLoading())
 
 			const account = await dispatch(fetchAccountInfo(address, true))
-			console.log('account', account)
+
 			if (account.message === 'NO-USER') {
 				console.log('User not found, create new user')
 
-				dispatch(postAccountInfo(address, tokenAmount, mintToOther))
+				dispatch(postAccountInfo(address, tokenAmount, noStoreUpdate))
 			} else {
 				if (Number(account.user.tokenAmount) !== Number(tokenAmount)) {
 					console.log('User found, update user')
-					console.log('(account.user.tokenAmount ', account.user.tokenAmount)
-					console.log('tokenAmount', tokenAmount)
-					dispatch(putAccountInfo(address, tokenAmount, mintToOther))
+					dispatch(putAccountInfo(address, tokenAmount, noStoreUpdate))
 				} else {
 					console.log('Accountdata update halt; No change in tokenAmount')
 				}
@@ -49,8 +54,12 @@ export const AddOrUpdateAccountInfo =
 		}
 	}
 
+/// @notice Fetches account info and updates AccountStore
+/// @param address, string: Address of user
+/// @param noStoreUpdate?, boolean: TRUE to avoid accountStore update
+/// @return User data
 export const fetchAccountInfo =
-	(address, actionsCall) => async (dispatch, getState) => {
+	(address, noStoreUpdate) => async (dispatch, getState) => {
 		if (address.length !== 42) {
 			console.log(`Error, invalid data; address: ${address} `)
 			return
@@ -58,43 +67,56 @@ export const fetchAccountInfo =
 		try {
 			dispatch(startLoading())
 
-			const response = await axios.get(`${API_URL}/user/${address}`)
-			!actionsCall && dispatch(accountInfo(response.data.user))
+			const response = await axios.get(`${SERVER_API_BASE_URL}/user/${address}`)
+			!noStoreUpdate && dispatch(accountInfo(response.data.user))
 			return response.data
 		} catch (e) {
 			console.log(e.message)
 		}
 	}
 
+/// @notice Stores new account info and updates AccountStore
+/// @param address, string: Address of user
+/// @param tokenAmount, string: Token amount of user in wei format
+/// @param noStoreUpdate?, boolean: TRUE to avoid accountStore update
+/// @return User data
 export const postAccountInfo =
-	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
+	(address, tokenAmount, noStoreUpdate) => async (dispatch, getState) => {
 		try {
 			dispatch(startLoading())
 
 			const response = await axios.post(
-				`${API_URL}/user/${address}/${tokenAmount}`
+				`${SERVER_API_BASE_URL}/user/${address}/${tokenAmount}`
 			)
 			console.log('POSTAccountInfo response: ', response.data)
-			!mintToOther && dispatch(accountInfo(response.data.user))
+			!noStoreUpdate && dispatch(accountInfo(response.data.user))
 		} catch (e) {
 			console.log(e.message)
 		}
 	}
 
+/// @notice Updates account info and updates AccountStore
+/// @param address, string: Address of user
+/// @param tokenAmount, string: Token amount of user in wei format
+/// @param noStoreUpdate?, boolean: TRUE to avoid accountStore update
+/// @return User data
 export const putAccountInfo =
-	(address, tokenAmount, mintToOther) => async (dispatch, getState) => {
+	(address, tokenAmount, noStoreUpdate) => async (dispatch, getState) => {
 		try {
 			dispatch(startLoading())
 			const response = await axios.put(
-				`${API_URL}/user/${address}/${tokenAmount}`
+				`${SERVER_API_BASE_URL}/user/${address}/${tokenAmount}`
 			)
 			console.log('PUTAccountInfo response: ', response.data)
-			!mintToOther && dispatch(accountInfo(response.data.user))
+			!noStoreUpdate && dispatch(accountInfo(response.data.user))
 		} catch (e) {
 			console.log(e.message)
 		}
 	}
 
+/// @notice Delete account info
+/// @param address, string: Address of user
+/// @return Deleted user data
 export const deleteAccountInfo = (address) => async (dispatch, getState) => {
 	if (address.length !== 42) {
 		console.log(`Error, invalid data; address: ${address} `)
@@ -102,7 +124,9 @@ export const deleteAccountInfo = (address) => async (dispatch, getState) => {
 	}
 	try {
 		dispatch(startLoading())
-		const response = await axios.delete(`${API_URL}/user/${address}`)
+		const response = await axios.delete(
+			`${SERVER_API_BASE_URL}/user/${address}`
+		)
 		console.log(response.data)
 		return response.data
 	} catch (e) {
