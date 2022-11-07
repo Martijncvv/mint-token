@@ -33,7 +33,7 @@ function Home() {
 
 	useEffect(() => {
 		if (address && balanceData) {
-			const tokenAmount = balanceData ? balanceData.formatted : 0
+			const tokenAmount = balanceData ? balanceData.formatted : ''
 			const tokenSymbol = balanceData ? balanceData.symbol : ''
 			console.log(NETWORK)
 			dispatch(fetchAccountInfo(address))
@@ -73,7 +73,7 @@ function Home() {
 						<Row
 							label="User balance:"
 							value={
-								tokenData && accountData
+								tokenData && accountData.tokenAmount
 									? accountData.tokenAmount / 10 ** 18
 									: ' '
 							}
